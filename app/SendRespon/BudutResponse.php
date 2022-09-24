@@ -163,7 +163,7 @@ class BudutResponse
     /**
      * Status 403 Forbidden
      * Absen di Total
-     * Karba Batas Waktu Absensi Habis
+     * Karna Batas Waktu Absensi Habis
      * @param string $message
      * @return Response
      */
