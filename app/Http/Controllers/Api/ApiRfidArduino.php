@@ -32,7 +32,7 @@ class ApiRfidArduino extends Controller
 	public function getJsonBudutwj()
 	{
 		//AsCgWnTkqnImWcPwQdWF1pEMQrpaJXhb token mesin
-		$url = 'https://budutwj.id/api/apidataSiswaServerLocal/$2y$10$oec23i.hXwCp2sSHwzn1DOP6mo0OXYcFH5UtDkFfRQJlnx83v.cei';
+		$url = env('URL_SERVER_SINKRON_DATA_USER');
 		$response = Http::get($url);
 		if ($response->successful()) {
 			$dataJson = $response->json();
@@ -139,64 +139,48 @@ class ApiRfidArduino extends Controller
 			return "A";
 		}
 	}
+	/**
+	 * insert absensi ke databasse
+	 * @param array $data
+	 * @param string $table
+	 */
 	function dbInsert($table,$data){
 		
 		try {
 
 			DB::table($table)->insert($data);
-			$response = [
-				'status'	=> 'oke',
-				'pesan'		=> $this->pesan,
-				'pesan2'  => $this->pesan2,
-				'kode'		=> 200
-			];
-			return response()->json($response,200);
-		
+			return BudutResponse::successAbsensBerhasil();
 		} catch (\Exception $e) {
-		
-			$response = [
-				'status'	=> 'error',
-				'pesan'		=> 'GAGAL',
-				'pesan2'	=> 'TAMBAH',
-				'kode'		=>  500
-			];
-			return response()->json($response, 500); 
+			return BudutResponse::ErrorAbsensiTambah();
 		}
 		
 	}
+	/**
+	 * update absensi ke databasse
+	 * @param array $data
+	 * @param array $where
+	 * @param string $table
+	 */
 	function dbUpdate($table,$where,$data){
 		
 		try {
 
 			DB::table($table)->where($where)->update($data);
-			$response = [
-				'status'	=> 'oke',
-				'pesan'		=> $this->pesan,
-				'pesan2'  => $this->pesan2,
-				'kode'		=> 200
-			];
-			return response()->json($response,200);
-		
-		} catch (\Exception $e) {
-			dd($e);
-			$response = [
-				'status'	=> 'error',
-				'pesan'		=> 'GAGAL',
-				'pesan2'	=> 'EDIT',
-				'kode'		=>  500
-			];
-			return response()->json($response, 500);
+
+			return BudutResponse::successAbsensBerhasil($this->pesan,$this->pesan2);
+
+		} catch (\Exception $e) 
+		{	//dd($e);
+			return BudutResponse::ErrorAbsensiEdit();
+
 		}
 		
 	}
+	/**
+	 * cek absensi sudah ada pada database
+	 */
 	function AndasudahScan(){
-		$response = [
-			'status'	=> 'oke',
-			'pesan'		=> 'ANDA SUDAH',
-			'pesan2'  => 'ABSEN',
-			'kode'		=> 200
-		];
-		return response()->json($response,200);
+		return BudutResponse::successAndaSudahAbsen();
 	}
 
 //END ARDUINO RFID -----------------------------------------------------------------------------------------------------------------------
@@ -213,13 +197,7 @@ class ApiRfidArduino extends Controller
 		$user = User_siswa::firstWhere('ssaidKartuRfid', $idkartu);
 
 		if ($user === null) {
-			$response = [
-				'status'	=> 'error',
-				'pesan'		=> 'ERROR',
-				'pesan2'	=> 'NO KARTU',
-				'kode'		=>  401
-			];
-			return response()->json($response, 401); //Unauthorized
+			return BudutResponse::ErrorNotKartu();
 		} else {
 			/**
 			 * catatan
@@ -237,12 +215,7 @@ class ApiRfidArduino extends Controller
 
 			#stap 1
 			if ($namahari == "Sunday1" or $namahari == "Saturday") {
-				$response = [
-					'status'	=> 'error',
-					'pesan'		=> 'HARI INI',
-					'pesan2'	=> 'LIBUR',
-				];
-				return response()->json($response, 401); //Unauthorized
+				return BudutResponse::ErrorHariLibur();
 			}  
 			else { //selain hari sabtu dan minggu //maka prosesss
 				// $arrayPulangUpdate=[];
@@ -358,14 +331,7 @@ class ApiRfidArduino extends Controller
 
 				} else {
 					//jika error 
-					$response = [
-						'status'	=> 'error',
-						'pesan'		=> 'ABSEN',
-						'pesan2'	=> 'DI TOLAK',
-						'kode'		=>  401
-					];
-					
-					return response()->json($response, 401); //Unauthorized
+					return BudutResponse::ErrorAbsenDiTotal();
 				}
 
 			} //end if cek nama hari
@@ -381,7 +347,7 @@ class ApiRfidArduino extends Controller
 		
 	//mengisi data ke server budutwj ---------------------------------------------------------------
 	public function sendToServer(){
-		$url = "http://127.0.0.1:8080/api/terima";
+		$url = env('URL_SERVER_KIRM_ABSEN');
 		$data = DB::table('absen_finger_siswa')->where('afsDatetime',"2022-09-20")->where("afsSinkron",0)->get();
 		// $response = Http::withToken('smkbudutabsensirfid')->post($url,['data' =>$data]);
 		// $array = $response->json();
@@ -396,7 +362,7 @@ class ApiRfidArduino extends Controller
 			
 			foreach($chunks as $chunk){
 				
-				$response = Http::withToken('smkbudutabsensirfid')->post($url,['data' =>$chunk]);
+				$response = Http::withToken(env('TOKEN_BEARER'))->post($url,['data' =>$chunk]);
 				$cekError = $response->failed(); //cek jika status >= 400 (error)
 				$array = json_decode($response); //ubah data json ke array
 
@@ -431,22 +397,12 @@ class ApiRfidArduino extends Controller
 				
 			} //end foreach
 			
-			$response = [
-				'status'  	=> 'success',
-				'data'			=> '',
-				'message'   => 'Berhasil : '.$noBerhasil.' Gagal : '.$noGagal,
-				
-			];
-			return response()->json($response,200);
+			$pesan = 'Berhasil : '.$noBerhasil.' Gagal : '.$noGagal;
+			return BudutResponse::successSinkronServerBudutWj($pesan);
 		}
 		else{
-			$response = [
-				'status'  	=> 'success',
-				'data'			=> '',
-				'message'   => 'DATA KOSONG',
-				
-			];
-			return response()->json($response,200);
+			$pesan ="DATA KOSONG";
+			return BudutResponse::successSinkronServerBudutWj($pesan);
 		}
 
 		

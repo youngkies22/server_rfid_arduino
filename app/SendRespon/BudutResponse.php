@@ -124,4 +124,153 @@ class BudutResponse
             'Content-Type' => 'application/json'
         ]);
     }
+
+// repost budutwj -------------------------------------------------------------------------------------------------
+    /**
+     * Status 403 Forbidden
+     * Error kartu tidak di temukan
+     * @param string $message
+     * @return Response
+     */
+    public static function ErrorNotKartu()
+    {
+        return new Response([
+            'status'	=> 'error',
+            'pesan'		=> 'ERROR KARTU',
+            'pesan2'	=> 'TIDAK DITEMUKAN',
+            'kode'		=>  403
+        ], 403, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+    /**
+     * Status 403 Forbidden
+     * Hari Libur
+     * @param string $message
+     * @return Response
+     */
+    public static function ErrorHariLibur()
+    {
+        return new Response([
+            'status'	=> 'error',
+            'pesan'		=> 'Hari Ini Libur',
+            'pesan2'	=> 'Anda Lupa ?',
+            'kode'		=>  403
+        ], 403, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+    /**
+     * Status 403 Forbidden
+     * Absen di Total
+     * Karba Batas Waktu Absensi Habis
+     * @param string $message
+     * @return Response
+     */
+    public static function ErrorAbsenDiTotal()
+    {
+        return new Response([
+            'status'	=> 'error',
+            'pesan'		=> 'ABSEN ANDA',
+            'pesan2'	=> 'DI TOTAL',
+            'kode'		=>  403
+        ], 403, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+    /**
+     * Status 200 Accept
+     * anda sudab absensi
+     * @param string $message
+     * @return Response
+     */
+    public static function successAndaSudahAbsen()
+    {
+        return new Response([
+            'status'	=> 'oke',
+			'pesan'		=> 'ANDA SUDAH',
+			'pesan2'    => 'ABSEN',
+			'kode'		=> 200
+        ],200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+    /**
+     * Status 200 Accept
+     * absensi siswa berhasil
+     * @param string $message
+     * @return Response
+     */
+    public static function successAbsensBerhasil($pesan1, $pesan2)
+    {
+        return new Response([
+            'status'	=> 'oke',
+            'pesan'		=> $pesan1,
+            'pesan2'    => $pesan2,
+            'kode'		=> 200
+        ],200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+    /**
+     * Status 200 Accept
+     * berhasil sinkron ke server budutwj
+     * @param string $message
+     * @return Response
+     */
+    public static function successSinkronServerBudutWj($pesan)
+    {
+        return new Response([
+            'status'  	=> 'success',
+            'data'		=> '',
+            'message'   => $pesan,
+        ],200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+
+    /**
+     * Status 500 Internal server error
+     * GAGAL EDIT ABSENSI
+     * @param string $message
+     * @return Response
+     */
+    public static function ErrorAbsensiEdit()
+    {
+        return new Response([
+            'status'	=> 'oke',
+            'pesan'		=> 'GAGAL EDIT',
+            'pesan2'    => 'ABSENSI',
+            'kode'		=> 500,
+        ],500, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+    /**
+     * Status 500 Internal server error
+     * GAGAL TAMBAH ABSENSI
+     * @param string $message
+     * @return Response
+     */
+    public static function ErrorAbsensiTambah()
+    {
+        return new Response([
+            'status'	=> 'oke',
+            'pesan'		=> 'GAGAL TAMBAH',
+            'pesan2'    => 'ABSENSI',
+            'kode'		=> 500
+        ],500, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+
+    
+
+
+
 }
