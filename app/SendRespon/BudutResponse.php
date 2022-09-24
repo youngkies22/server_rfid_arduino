@@ -3,7 +3,7 @@ namespace App\SendRespon;
 
 //use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-
+use Ramsey\Uuid\Type\Integer;
 
 /**
  * Dev       : @mryes
@@ -167,7 +167,7 @@ class BudutResponse
      * @param string $message
      * @return Response
      */
-    public static function ErrorAbsenDiTotal()
+    public static function ErrorAbsenDiTolak()
     {
         return new Response([
             'status'	=> 'error',
@@ -200,15 +200,28 @@ class BudutResponse
     /**
      * Status 200 Accept
      * absensi siswa berhasil
-     * @param string $message
+     * @param int $status
      * @return Response
      */
-    public static function successAbsensBerhasil($pesan1, $pesan2)
+    public static function successAbsensBerhasil(int $status=0 )
     {
+        
+        if($status == 1){
+            $pesan ="ABSENSI MASUK";
+            $pesan2 = "TELAH BERHASIL";
+        }
+        elseif($status ==2){
+            $pesan ="ABSENSI PULANG";
+            $pesan2 = "TELAH BERHASIL";
+        }
+        else{
+            $pesan ="ABSENSI";
+            $pesan2 = "ERROR";
+        }
         return new Response([
             'status'	=> 'oke',
-            'pesan'		=> $pesan1,
-            'pesan2'    => $pesan2,
+            'pesan'		=> $pesan != '' ? $pesan : '',
+            'pesan2'    => $pesan2 != '' ? $pesan2 : '',
             'kode'		=> 200
         ],200, [
             'Content-Type' => 'application/json'

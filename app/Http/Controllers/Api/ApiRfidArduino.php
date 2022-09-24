@@ -144,12 +144,12 @@ class ApiRfidArduino extends Controller
 	 * @param array $data
 	 * @param string $table
 	 */
-	function dbInsert($table,$data){
+	function dbInsert($table,$data,$status){
 		
 		try {
 
 			DB::table($table)->insert($data);
-			return BudutResponse::successAbsensBerhasil();
+			return BudutResponse::successAbsensBerhasil($status);
 		} catch (\Exception $e) {
 			return BudutResponse::ErrorAbsensiTambah();
 		}
@@ -161,16 +161,17 @@ class ApiRfidArduino extends Controller
 	 * @param array $where
 	 * @param string $table
 	 */
-	function dbUpdate($table,$where,$data){
+	function dbUpdate($table,$where,$data,$status){
 		
 		try {
 
 			DB::table($table)->where($where)->update($data);
 
-			return BudutResponse::successAbsensBerhasil($this->pesan,$this->pesan2);
+			return BudutResponse::successAbsensBerhasil($status);
 
 		} catch (\Exception $e) 
-		{	//dd($e);
+		{	
+			//dd($e);
 			return BudutResponse::ErrorAbsensiEdit();
 
 		}
@@ -214,7 +215,7 @@ class ApiRfidArduino extends Controller
 			$bulan = date('n');
 
 			#stap 1
-			if ($namahari == "Sunday1" or $namahari == "Saturday") {
+			if ($namahari == "Sundaya" or $namahari == "Saturdaya") {
 				return BudutResponse::ErrorHariLibur();
 			}  
 			else { //selain hari sabtu dan minggu //maka prosesss
@@ -263,7 +264,7 @@ class ApiRfidArduino extends Controller
 							'afsJenis'				=>$jensiAbsen,
 							'afsJenisAbsen'		=>1
 						];
-						return $this->dbInsert("absen_finger_siswa",$arrayPulangInsert);
+						return $this->dbInsert("absen_finger_siswa",$arrayPulangInsert,1);
 					}
 				} 
 				elseif ($statusJamScan == 2) { // 2 jika scan pulang
@@ -288,7 +289,7 @@ class ApiRfidArduino extends Controller
 								'afsJenisAbsen'		=>2
 							];
 							
-							return $this->dbUpdate("absen_finger_siswa",$where,$arrayPulangUpdate);
+							return $this->dbUpdate("absen_finger_siswa",$where,$arrayPulangUpdate,2);
 						}
 						// elseif($cekJamIn == null AND $cekJamOut != null){
 						// 	#jika scan masuk sudah ada, agar tidak terjadi scan berulang
@@ -306,7 +307,7 @@ class ApiRfidArduino extends Controller
 								'afsOut'					=>$jamsekarang,	
 								'afsJenisAbsen'		=>3
 							];
-							return $this->dbUpdate("absen_finger_siswa",$where,$arrayPulangUpdate);
+							return $this->dbUpdate("absen_finger_siswa",$where,$arrayPulangUpdate,2);
 						}
 						
 					}
@@ -325,13 +326,13 @@ class ApiRfidArduino extends Controller
 							'afsJenis'				=>$jensiAbsen,
 							'afsJenisAbsen'		=>2
 						];
-						return $this->dbInsert("absen_finger_siswa",$arrayPulangInsert);
+						return $this->dbInsert("absen_finger_siswa",$arrayPulangInsert,2);
 
 					} //end cekAbsenDiDatabase
 
 				} else {
 					//jika error 
-					return BudutResponse::ErrorAbsenDiTotal();
+					return BudutResponse::ErrorAbsenDiTolak();
 				}
 
 			} //end if cek nama hari
@@ -387,7 +388,8 @@ class ApiRfidArduino extends Controller
 							"afsSinkron"	=>$val->afsSinkron,
 						];
 						try {
-							$this->dbUpdate($table,$where,$dataArray);
+							#edit data yang sudah berhasil di sinkron ke server
+							$this->dbUpdate($table,$where,$dataArray,1); 
 							$noBerhasil++;
 						} catch (\Exception $e) {
 							$noGagal++;
