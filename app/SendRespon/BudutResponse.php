@@ -170,6 +170,8 @@ class BudutResponse
     public static function ErrorAbsenDiTolak()
     {
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'error',
             'pesan'		=> 'ABSEN ANDA',
             'pesan2'	=> 'DI TOTAL',
