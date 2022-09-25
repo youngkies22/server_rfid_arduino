@@ -194,6 +194,9 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        
+        //add mryes perpus budut
+        Barryvdh\Debugbar\ServiceProvider::class,
 
     ],
 
@@ -209,6 +212,8 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        //'Redis' => Illuminate\Support\Facades\Redis::class,
+        'Debugbar' => Barryvdh\Debugbar\Facade::class,
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 

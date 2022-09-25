@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ApiRfidArduino;
 
+use Illuminate\Support\Facades\Redis;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -15,6 +17,11 @@ use App\Http\Controllers\Api\ApiRfidArduino;
 |
 */
 
+
+Route::get('/', function () {
+    $p = Redis::incr('p');
+    return $p;
+});
 
 Route::get('scan/{idkartu}', [ApiRfidArduino::class, 'getArduino']);
 Route::get('sinkron', [ApiRfidArduino::class, 'getJsonBudutwj']);

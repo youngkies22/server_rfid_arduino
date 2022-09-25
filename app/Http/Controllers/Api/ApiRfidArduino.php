@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
-
+use Illuminate\Support\Arr;
 use DB;
 use App\SendRespon\BudutResponse;
 use App\Models\User_siswa;
@@ -195,7 +195,18 @@ class ApiRfidArduino extends Controller
 	function getArduino($idkartu)
 	{
 
-		$user = User_siswa::firstWhere('ssaidKartuRfid', $idkartu);
+		//proses cache akun user rfid -------------------------------------------------------------------		
+			if (Cache::has('user_siswa_'.$idkartu)) {
+				$user = Cache::get('user_siswa_'.$idkartu);
+			}
+			else{
+				
+				$user = User_siswa::firstWhere('ssaidKartuRfid', $idkartu);
+				//$user = User_siswa::get()->toJson();
+				Cache::forever('user_siswa_'.$idkartu, $user);
+			}
+		//proses cache akun user rfid -------------------------------------------------------------------
+
 
 		if ($user === null) {
 			return BudutResponse::ErrorNotKartu();
