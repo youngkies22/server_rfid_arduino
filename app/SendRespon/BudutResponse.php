@@ -135,6 +135,8 @@ class BudutResponse
     public static function ErrorNotKartu()
     {
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'error',
             'pesan'		=> 'ERROR KARTU',
             'pesan2'	=> 'TIDAK DITEMUKAN',
@@ -152,6 +154,8 @@ class BudutResponse
     public static function ErrorHariLibur()
     {
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'error',
             'pesan'		=> 'Hari Ini Libur',
             'pesan2'	=> 'Anda Lupa ?',
@@ -174,7 +178,7 @@ class BudutResponse
             'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'error',
             'pesan'		=> 'ABSEN ANDA',
-            'pesan2'	=> 'DI TOTAL',
+            'pesan2'	=> 'DI TOLAK',
             'kode'		=>  403
         ], 403, [
             'Content-Type' => 'application/json'
@@ -190,6 +194,8 @@ class BudutResponse
     public static function successAndaSudahAbsen()
     {
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'oke',
 			'pesan'		=> 'ANDA SUDAH',
 			'pesan2'    => 'ABSEN',
@@ -221,6 +227,8 @@ class BudutResponse
             $pesan2 = "ERROR";
         }
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'oke',
             'pesan'		=> $pesan != '' ? $pesan : '',
             'pesan2'    => $pesan2 != '' ? $pesan2 : '',
@@ -239,6 +247,8 @@ class BudutResponse
     public static function successSinkronServerBudutWj($pesan)
     {
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'  	=> 'success',
             'data'		=> '',
             'message'   => $pesan,
@@ -257,6 +267,8 @@ class BudutResponse
     public static function ErrorAbsensiEdit()
     {
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'oke',
             'pesan'		=> 'GAGAL EDIT',
             'pesan2'    => 'ABSENSI',
@@ -274,6 +286,8 @@ class BudutResponse
     public static function ErrorAbsensiTambah()
     {
         return new Response([
+            'tgl'       =>  date('Y-m-d H:i'),
+            'hari'      =>  date('l', strtotime(date('Y-m-d'))),
             'status'	=> 'oke',
             'pesan'		=> 'GAGAL TAMBAH',
             'pesan2'    => 'ABSENSI',
