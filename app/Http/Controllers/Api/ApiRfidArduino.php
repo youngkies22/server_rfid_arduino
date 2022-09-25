@@ -226,7 +226,7 @@ class ApiRfidArduino extends Controller
 			$bulan = date('n');
 
 			#stap 1
-			if ($namahari == "Sundaya" or $namahari == "Saturdaya") {
+			if ($namahari == "Sunday" or $namahari == "Saturday") {
 				return BudutResponse::ErrorHariLibur();
 			}  
 			else { //selain hari sabtu dan minggu //maka prosesss
