@@ -36,6 +36,7 @@ class ApiRfidArduino extends Controller
 		$response = Http::get($url);
 		if ($response->successful()) {
 			$dataJson = $response->json();
+
 			$dataArray = [];
 			foreach ($dataJson['data'] as $val) {
 				$data = [
@@ -44,17 +45,19 @@ class ApiRfidArduino extends Controller
 					'ssaJrsId'				=> $val['jurusan'],
 					'ssaRblId'				=> $val['rombel'],
 					'ssaTahunAngkata'	=> $val['tahun_angkatan'],
-					'ssaLastName'			=> $val['nama_depan'],
-					'ssaLastName'			=> $val['nama_belakang'],
+					// 'ssaLastName'			=> $val['nama_depan'],
+					// 'ssaLastName'			=> $val['nama_belakang'],
 					'ssaFullName'			=> $val['full_nama'],
-					'ssaidKartuRfid'	=> $val['idkartu_rfid'],
+					// 'ssaidKartuRfid'	=> $val['idkartu_rfid'],
+                    'ssaidKartuRfid'	=> $val['username'],
 
 				];
 				$dataArray[] = $data;
 			}
+
 			if (!empty($dataArray)) {
 				$dataArray = collect($dataArray); // Make a collection to use the chunk method
-				$chunks = $dataArray->chunk(500); //pesah data per 500 untuk di proses
+				$chunks = $dataArray->chunk(200); //pesah data per 500 untuk di proses
 
 				foreach ($chunks as $chunk) {
 
@@ -81,11 +84,11 @@ class ApiRfidArduino extends Controller
 	}
 
 
-	
+
 
 //ARDUINO RFID -----------------------------------------------------------------------------------------------------------------------
 	//function cek status scan masuk atau pulang ------------------------------------------------
-	
+
 	//function cek status scan masuk atau pulang ------------------------------------------------
 	function cekAbsenDiDatabase($username, $tgl)
 	{
@@ -121,18 +124,18 @@ class ApiRfidArduino extends Controller
 	 * cek status jam in saat melakuakn absen pulang
 	 */
 	function cekStatusAbsenBerdasrkanJamIn($jamIn,$jamBatasMasuk,$jenis){
-		
 		if(strtotime($jamIn) <= strtotime($jamBatasMasuk)){
 			#jika $jenis 1 maka status h kecil dan absen pulang kosong
 			if($jenis == 1){
 				return "h";
 			}
-			else{ 
+			else{
 				return "H"; #jika status absen pulang tidak kosong maka H besar
 			}
-			
+
 		}
 		elseif(strtotime($jamIn) >= strtotime($jamBatasMasuk)){
+
 			return "T";
 		}
 		else{
@@ -145,7 +148,7 @@ class ApiRfidArduino extends Controller
 	 * @param string $table
 	 */
 	function dbInsert($table,$data,$status){
-		
+
 		try {
 
 			DB::table($table)->insert($data);
@@ -153,7 +156,7 @@ class ApiRfidArduino extends Controller
 		} catch (\Exception $e) {
 			return BudutResponse::ErrorAbsensiTambah();
 		}
-		
+
 	}
 	/**
 	 * update absensi ke databasse
@@ -162,20 +165,20 @@ class ApiRfidArduino extends Controller
 	 * @param string $table
 	 */
 	function dbUpdate($table,$where,$data,$status){
-		
+
 		try {
 
 			DB::table($table)->where($where)->update($data);
 
 			return BudutResponse::successAbsensBerhasil($status);
 
-		} catch (\Exception $e) 
-		{	
+		} catch (\Exception $e)
+		{
 			//dd($e);
 			return BudutResponse::ErrorAbsensiEdit();
 
 		}
-		
+
 	}
 	/**
 	 * cek absensi sudah ada pada database
@@ -195,12 +198,12 @@ class ApiRfidArduino extends Controller
 	function getArduino($idkartu)
 	{
 
-		//proses cache akun user rfid -------------------------------------------------------------------		
+		//proses cache akun user rfid -------------------------------------------------------------------
 			if (Cache::has('user_siswa_'.$idkartu)) {
 				$user = Cache::get('user_siswa_'.$idkartu);
 			}
 			else{
-				
+
 				$user = User_siswa::firstWhere('ssaidKartuRfid', $idkartu);
 				//$user = User_siswa::get()->toJson();
 				Cache::forever('user_siswa_'.$idkartu, $user);
@@ -215,7 +218,7 @@ class ApiRfidArduino extends Controller
 			 * catatan
 			 * afsJenisAbsen = 1 sudah scan masuk scan pulang kosong, 2 sudah scan pulang scan masuk kosong , 3 sudah scan masuk dan pulang
 			 * $jensiAbsen = 1 mesin finger, 2 guru, 3 siswa, 4 absen rfid
-			 * 
+			 *
 			 * absen siswa mulai jam 06.00 sampai jam  08.00
 			 * jika lebih dari jam 8.00 maka di tolak
 			 * sampai jam 13.00 absen pulang sudah di mulai, sampai jam 18.00
@@ -226,13 +229,14 @@ class ApiRfidArduino extends Controller
 			$bulan = date('n');
 
 			#stap 1
-			if ($namahari == "Sunday" or $namahari == "Saturday") {
+			if ($namahari == ENV('SUNDAY') or $namahari == ENV('SATURDAY')) {
 				return BudutResponse::ErrorHariLibur();
-			}  
-			else { //selain hari sabtu dan minggu //maka prosesss
+			}
+			else {
+                //selain hari sabtu dan minggu //maka prosesss
 				// $arrayPulangUpdate=[];
 				// $arrayPulangInsert=[];
-				
+
 				#uncuk cek scan Status Hadir Terlambat
 				$jamMasukSekolah 	= env("JAM_MASUK_SEKOLAH");
 				$jamPulangSekolah	= env("JAM_PULANG_SEKOLAH");
@@ -241,12 +245,12 @@ class ApiRfidArduino extends Controller
 				$jamsekarang = date("H:i");
 				$namahari = date('l', strtotime(date('Y-m-d')));
 				$tglSekarang = date('Y-m-d');
-				
+
 				//dari db -----------------------------------
 				$username = $user->ssaUsername;
 				$sklId 		= $user->ssaSklId;
 				$rblId 		= $user->ssaRblId;
-				
+
 
 				#cek batas scan absensi
 				$statusJamScan = $this->cekBatasScan($jamsekarang);
@@ -255,15 +259,15 @@ class ApiRfidArduino extends Controller
 				#stap 2
 				if ($statusJamScan == 1) { // 1 jika scan masuk
 					$cek = $this->cekAbsenDiDatabase($username, $tglSekarang); //cek apakah sudah ada absen di database
-					
+
 					if($cek->exists()){ //jika data absen sudah ada
 						return $this->AndasudahScan();
 					}
 					else{ //jika ada absen belum ada
-						$uuid	=	$this->getUuId();
+						//$uuid	=	$this->getUuId();
 						$cekStatusJamIn = $this->cekStatusAbsenBerdasrkanJamIn($jamsekarang,$jamBatasMasukSekolah,1);
 						$arrayPulangInsert=[
-							'afsId'						=>$uuid,
+							//'afsId'						=>$uuid,
 							'afsSklId'				=>$sklId,
 							'afsSsaUsername'	=>$username,
 							'afsRblId'				=>$rblId,
@@ -277,17 +281,17 @@ class ApiRfidArduino extends Controller
 						];
 						return $this->dbInsert("absen_finger_siswa",$arrayPulangInsert,1);
 					}
-				} 
+				}
 				elseif ($statusJamScan == 2) { // 2 jika scan pulang
-					
+
 					$cek = $this->cekAbsenDiDatabase($username, $tglSekarang); //cek apakah sudah ada absen di database
-					
+
 					if($cek->exists()){
 						#cek jam in pada absen database karna data ada, apakah null atau ada valuenya
 						$cekJam = $cek->first();
 						$cekJamIn = !empty($cekJam->afsIn) ? $cekJam->afsIn : null;
 						//$cekJamOut = !empty($cekJam->afsOut) ? $cekJam->afsOut : null;
-						
+
 						//if($cekJamIn == null AND $cekJamOut == null){
 						if($cekJamIn == null){
 							$where = [
@@ -296,10 +300,10 @@ class ApiRfidArduino extends Controller
 							$arrayPulangUpdate=[
 								'afsAkId'					=>"T",
 								'afsIn'						=>null,
-								'afsOut'					=>$jamsekarang,	
+								'afsOut'					=>$jamsekarang,
 								'afsJenisAbsen'		=>2
 							];
-							
+
 							return $this->dbUpdate("absen_finger_siswa",$where,$arrayPulangUpdate,2);
 						}
 						// elseif($cekJamIn == null AND $cekJamOut != null){
@@ -308,24 +312,24 @@ class ApiRfidArduino extends Controller
 						// }
 						else{
 							#jika absen masuk sudah ada value nya dan absen pulang belum ada valuenya
-							
+
 							$cekStatusJamIn = $this->cekStatusAbsenBerdasrkanJamIn($cekJamIn,$jamBatasMasukSekolah,2);
 							$where = [
 								'afsSsaUsername'	=>$username,
 							];
 							$arrayPulangUpdate=[
 								'afsAkId'					=>$cekStatusJamIn,
-								'afsOut'					=>$jamsekarang,	
+								'afsOut'					=>$jamsekarang,
 								'afsJenisAbsen'		=>3
 							];
 							return $this->dbUpdate("absen_finger_siswa",$where,$arrayPulangUpdate,2);
 						}
-						
+
 					}
 					else{ //jika data absen tidak di temukan
-						$uuid	=	$this->getUuId();
+						//$uuid	=	$this->getUuId();
 						$arrayPulangInsert=[
-							'afsId'						=>$uuid,
+							//'afsId'						=>$uuid,
 							'afsSklId'				=>$sklId,
 							'afsSsaUsername'	=>$username,
 							'afsRblId'				=>$rblId,
@@ -342,13 +346,13 @@ class ApiRfidArduino extends Controller
 					} //end cekAbsenDiDatabase
 
 				} else {
-					//jika error 
+					//jika error
 					return BudutResponse::ErrorAbsenDiTolak();
 				}
 
 			} //end if cek nama hari
 
-			
+
 
 		}
 	}
@@ -356,24 +360,24 @@ class ApiRfidArduino extends Controller
 	// menerima send post data dari arduino -----------------------------------------------------
 
 
-		
+
 	//mengisi data ke server budutwj ---------------------------------------------------------------
 	public function sendToServer(){
 		$url = env('URL_SERVER_KIRM_ABSEN');
 		$data = DB::table('absen_finger_siswa')->where('afsDatetime',"2022-09-20")->where("afsSinkron",0)->get();
 		// $response = Http::withToken('smkbudutabsensirfid')->post($url,['data' =>$data]);
 		// $array = $response->json();
-		
+
 		// return response()->json($array,200);
-		
-		
+
+
 		$chunks = $data->chunk(300);
 		$table="absen_finger_siswa";
 		$noBerhasil =0; $noGagal=0;
 		if($data->count() > 0){
-			
+
 			foreach($chunks as $chunk){
-				
+
 				$response = Http::withToken(env('TOKEN_BEARER'))->post($url,['data' =>$chunk]);
 				$cekError = $response->failed(); //cek jika status >= 400 (error)
 				$array = json_decode($response); //ubah data json ke array
@@ -400,16 +404,16 @@ class ApiRfidArduino extends Controller
 						];
 						try {
 							#edit data yang sudah berhasil di sinkron ke server
-							$this->dbUpdate($table,$where,$dataArray,1); 
+							$this->dbUpdate($table,$where,$dataArray,1);
 							$noBerhasil++;
 						} catch (\Exception $e) {
 							$noGagal++;
 						}
 					}
 				}
-				
+
 			} //end foreach
-			
+
 			$pesan = 'Berhasil : '.$noBerhasil.' Gagal : '.$noGagal;
 			return BudutResponse::successSinkronServerBudutWj($pesan);
 		}
@@ -418,9 +422,9 @@ class ApiRfidArduino extends Controller
 			return BudutResponse::successSinkronServerBudutWj($pesan);
 		}
 
-		
 
-		
+
+
 	}
 
 //mengisi data ke server budutwj ---------------------------------------------------------------
